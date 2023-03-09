@@ -3,7 +3,7 @@ library(ngramr)
 library(stringr)
 
 #set working directory
-setwd("C:/Users/cmg3/Documents/GitHub/anachronistic_text")
+setwd("~/Documents/GitHub/anachronistic_text")
 
 #read text file
 text <- readLines("example.txt")
