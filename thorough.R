@@ -3,10 +3,10 @@ library(ngramr)
 library(stringr)
 
 #set working directory
-setwd("~/Documents/GitHub/anachronistic_text")
+setwd("~/GitHub/anachronistic_text")
 
 #read text file
-text <- readLines("example.txt")
+text <- readLines("C:/Users/cmg3/Documents/example.txt")
 
 #set target year
 target.year <- 1875
@@ -30,9 +30,6 @@ text <- text[!str_detect(text, "’")]
 #turn the remaining uncommon words into chunks to be ngram'd
 text.chunks <- chunk(text, len = 12)
 
-ngram(text.chunks[[i]][6], year_start = target.year-1)
-ngram(text.chunks[[i]][6], year_start = target.year-1, year_end = target.year)
-
 #get the data for uncommon words
 stats <- tibble()
 for (i in 1:length(text.chunks)) {
@@ -41,6 +38,7 @@ for (i in 1:length(text.chunks)) {
     new <- ngram(text.chunks[[i]], year_start = 2018, year_end = 2019) %>% as_tibble()
     stats <- rbind(stats, new, old)
     }, error = function(e){
+      print(paste("chunk error at chunk",i))
       for (n in 1:length(text.chunks[[i]])) {
         tryCatch({
           old <- ngram(text.chunks[[i]][n], year_start = target.year-1, year_end = target.year) %>% as_tibble()
@@ -48,6 +46,7 @@ for (i in 1:length(text.chunks)) {
           print(paste("chunk",i,"word",n))
           stats <- rbind(stats, new, old)
         }, error = function(e){
+          print(paste("bad phrase at chunk",i,"phrase",n))
           print(paste(n,"again"))
           all <- ngram(text.chunks[[i]][n], year_start = target.year) %>% as_tibble()
           stats <- rbind(stats, all)
@@ -58,17 +57,15 @@ for (i in 1:length(text.chunks)) {
 }
 stats <- filter(stats, Year == target.year | Year == max(Year)) %>% distinct() 
 
-
-
-#get the data for uncommon words
-stats <- tibble()
-for (i in 1:length(text.chunks)) {
-  old <- ngram(text.chunks[[i]], year_start = target.year-1, year_end = target.year) %>% as_tibble()
-  new <- ngram(text.chunks[[i]], year_start = 2018, year_end = 2019) %>% as_tibble()
-  stats <- rbind(stats, new, old)
-  print(i/length(text.chunks))
-}
-stats <- filter(stats, Year == target.year | Year == max(Year)) 
+# #get the data for uncommon words
+# stats <- tibble()
+# for (i in 1:length(text.chunks)) {
+#   old <- ngram(text.chunks[[i]], year_start = target.year-1, year_end = target.year) %>% as_tibble()
+#   new <- ngram(text.chunks[[i]], year_start = 2018, year_end = 2019) %>% as_tibble()
+#   stats <- rbind(stats, new, old)
+#   print(i/length(text.chunks))
+# }
+# stats <- filter(stats, Year == target.year | Year == max(Year)) 
 
 #get the data for common words
 common.stats <- filter(common, Phrase %in% text.common & (Year == target.year | Year == max(Year)))
