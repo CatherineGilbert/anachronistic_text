@@ -70,6 +70,7 @@ common.stats <- filter(common, Phrase %in% text.common & (Year == target.year | 
 #combine data for common and uncommon words
 stats <- rbind(stats, common.stats) %>% distinct()
 stats$Phrase <- as.character(stats$Phrase)
+stats$Phrase <- gsub(pattern = " ", stats$Phrase, replacement = "")
 stats <- arrange(stats, Phrase, Year)
 
 #find words which are used at a much greater frequency in the modern year than in the target year
@@ -80,3 +81,8 @@ sus.ratio[sus.ratio$Year == max(sus.ratio$Year),"Year_name"] <- "Modern"
 sus.ratio <- sus.ratio %>% select(-Year) %>% pivot_wider(names_from = "Year_name", values_from = Frequency)
 sus.ratio <- sus.ratio %>% mutate(Ratio = Old/Modern) %>% arrange(Ratio)
 sus.ratio
+
+#use ggrams to investigate trends of individual words
+ggram(c(as.character(sus.ratio[1,"Phrase"]),as.character(sus.ratio[nrow(sus.ratio),"Phrase"])))
+
+      
