@@ -12,7 +12,7 @@ text <- readLines("C:/Users/cmg3/Documents/example.txt")
 target.year <- 1875
 
 #concatenate lines
-text <- paste(text, collapse = " ") %>% gsub(pattern = "[^[:alpha:]|’]", replacement = " ") %>% 
+text <- paste(text, collapse = " ") %>% gsub(pattern = "[^[:alpha:]|[:space:]|']", replacement = "") %>% 
   str_squish %>% str_to_lower()
 
 #get the unique words
@@ -23,9 +23,6 @@ common <- read_csv("common_words.csv") %>% select(Year,Phrase,Frequency,Corpus)
 common.words <- common$Phrase %>% unique()
 text.common <- text[text %in% common.words]
 text <- text[!text %in% common.words]
-
-#get rid of the ' 's ...
-text <- text[!str_detect(text, "’")]
 
 #turn the remaining uncommon words into chunks to be ngram'd
 text.chunks <- chunk(text, len = 12)
