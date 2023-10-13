@@ -30,27 +30,29 @@ text.chunks <- chunk(text, len = 12)
 #get the data for uncommon words
 stats <- tibble()
 for (i in 1:length(text.chunks)) {
-  tryCatch({
-    old <- ngram(text.chunks[[i]], year_start = target.year-1, year_end = target.year) %>% as_tibble()
-    new <- ngram(text.chunks[[i]], year_start = 2018, year_end = 2019) %>% as_tibble()
-    stats <- rbind(stats, new, old)
-    }, error = function(e){
-      print(paste("chunk error at chunk",i))
-      for (n in 1:length(text.chunks[[i]])) {
-        tryCatch({
-          old <- ngram(text.chunks[[i]][n], year_start = target.year-1, year_end = target.year) %>% as_tibble()
-          new <- ngram(text.chunks[[i]][n], year_start = 2018, year_end = 2019) %>% as_tibble()
-          print(paste("chunk",i,"word",n))
-          stats <<- rbind(stats, new, old)
-        }, error = function(e){
-          print(paste("bad phrase at chunk",i,"phrase",n))
-          print(paste(n,"again"))
-          all <- ngram(text.chunks[[i]][n], year_start = target.year) %>% as_tibble()
-          stats <<- rbind(stats, all)
-        })
-      }
-    })
-  if (i %% 10 == 0 | i == length(text.chunks)) {stats <- filter(stats, Year == target.year | Year == max(Year)) %>% distinct()}
+  if (any(!text.chunks[[i]] %in% stats$Phrase) == TRUE){
+    tryCatch({
+      old <- ngram(text.chunks[[i]], year_start = target.year-1, year_end = target.year) %>% as_tibble()
+      new <- ngram(text.chunks[[i]], year_start = 2018, year_end = 2019) %>% as_tibble()
+      stats <- rbind(stats, new, old)
+      }, error = function(e){
+        print(paste("chunk error at chunk",i))
+        for (n in 1:length(text.chunks[[i]])) {
+          tryCatch({
+            old <- ngram(text.chunks[[i]][n], year_start = target.year-1, year_end = target.year) %>% as_tibble()
+            new <- ngram(text.chunks[[i]][n], year_start = 2018, year_end = 2019) %>% as_tibble()
+            print(paste("chunk",i,"word",n))
+            stats <<- rbind(stats, new, old)
+          }, error = function(e){
+            print(paste("bad phrase at chunk",i,"phrase",n))
+            print(paste(n,"again"))
+            all <- ngram(text.chunks[[i]][n], year_start = target.year) %>% as_tibble()
+            stats <<- rbind(stats, all)
+          })
+        }
+      })
+  }
+  if (i %% 5 == 0 | i == length(text.chunks)) {stats <- filter(stats, Year == target.year | Year == max(Year)) %>% distinct()}
   print(i/length(text.chunks))
 }
 
