@@ -41,18 +41,18 @@ for (i in 1:length(text.chunks)) {
           old <- ngram(text.chunks[[i]][n], year_start = target.year-1, year_end = target.year) %>% as_tibble()
           new <- ngram(text.chunks[[i]][n], year_start = 2018, year_end = 2019) %>% as_tibble()
           print(paste("chunk",i,"word",n))
-          stats <- rbind(stats, new, old)
+          stats <<- rbind(stats, new, old)
         }, error = function(e){
           print(paste("bad phrase at chunk",i,"phrase",n))
           print(paste(n,"again"))
           all <- ngram(text.chunks[[i]][n], year_start = target.year) %>% as_tibble()
-          stats <- rbind(stats, all)
+          stats <<- rbind(stats, all)
         })
       }
     })
+  if (i %% 10 == 0 | i == length(text.chunks)) {stats <- filter(stats, Year == target.year | Year == max(Year)) %>% distinct()}
   print(i/length(text.chunks))
 }
-stats <- filter(stats, Year == target.year | Year == max(Year)) %>% distinct() 
 
 # #get the data for uncommon words
 # stats <- tibble()
@@ -79,8 +79,10 @@ sus.ratio$Year_name <- as.character(sus.ratio$Year)
 sus.ratio[sus.ratio$Year == min(sus.ratio$Year),"Year_name"] <- "Old"
 sus.ratio[sus.ratio$Year == max(sus.ratio$Year),"Year_name"] <- "Modern"
 sus.ratio <- sus.ratio %>% select(-Year) %>% pivot_wider(names_from = "Year_name", values_from = Frequency)
-sus.ratio <- sus.ratio %>% mutate(Ratio = Old/Modern) %>% arrange(Ratio)
-sus.ratio
+sus.ratio <- sus.ratio %>% mutate(Ratio = Old/Modern)
+sus.ratio$Ratio <- round(sus.ratio$Ratio,2)
+for(x in 3:5){sus.ratio[is.na(sus.ratio[x]),x] <- 0}
+sus.ratio <- arrange(sus.ratio, Old, Ratio)
 
 #use ggrams to investigate trends of individual words
 ggram(c(as.character(sus.ratio[1,"Phrase"]),as.character(sus.ratio[nrow(sus.ratio),"Phrase"])))
